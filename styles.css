@@ -1,71 +1,26 @@
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #dff1ff, #c2e9fb);
-  margin: 0;
-  padding: 0;
+  font-family: "Poppins", sans-serif;
+  background: #eef3f7;
   color: #333;
-}
-
-header {
   text-align: center;
-  padding: 1.5em;
-  background: #0077cc;
-  color: white;
-  border-bottom: 4px solid #005fa3;
+  padding: 20px;
 }
 
-main {
-  padding: 1.5em;
+h1 {
+  margin-bottom: 20px;
 }
 
-#panel-datos {
+.cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1em;
+  gap: 10px;
+  margin-bottom: 30px;
 }
 
-.data-card {
+.card {
   background: white;
-  border-radius: 1em;
-  padding: 1.2em;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease;
-}
-
-.data-card:hover {
-  transform: scale(1.05);
-}
-
-.data-card h2 {
-  color: #0077cc;
-  font-size: 1.2em;
-}
-
-.data-card p {
-  font-size: 1.5em;
-  margin: 0.5em 0 0;
-  font-weight: bold;
-}
-
-#graficas {
-  margin-top: 2em;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2em;
-}
-
-.grafica {
-  background: white;
-  border-radius: 1em;
-  padding: 1em;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-footer {
-  text-align: center;
-  padding: 1em;
-  background: #0077cc;
-  color: white;
-  font-size: 0.9em;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 1.1em;
 }
