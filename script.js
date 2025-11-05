@@ -1,91 +1,113 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const TOKEN = "TU_TOKEN_AQUI";
-  const CHAT_ID = "-1003116455259";
-  const API_URL = `https://api.telegram.org/bot${TOKEN}/getUpdates`;
+  // 🔑 Inserta aquí tu token real del bot
+  const TOKEN = "<TU_TOKEN_AQUI>";
+  const url = `https://api.telegram.org/bot${TOKEN}/getUpdates`;
 
+  // 📊 Inicializar gráfica
+  const canvas = document.getElementById("chart");
+  const ctx = canvas.getContext("2d");
+
+  const grafica = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Temperatura (°C)",
+          data: [],
+          borderColor: "orange",
+          backgroundColor: "rgba(255,165,0,0.3)",
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: "white" } }
+      },
+      scales: {
+        x: {
+          ticks: { color: "white" },
+          grid: { color: "rgba(255,255,255,0.1)" }
+        },
+        y: {
+          ticks: { color: "white" },
+          grid: { color: "rgba(255,255,255,0.1)" },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // 🧠 Función para obtener los datos del canal
   async function obtenerDatos() {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(url);
       const data = await res.json();
 
-      if (!data.ok) throw new Error("Error en la API de Telegram");
-
       const mensajes = data.result
-        .map(m => m.channel_post?.text)
-        .filter(Boolean);
+        .map(u => u.channel_post?.text)
+        .filter(t => t && t.includes("Reporte Meteorológico ITEL"));
 
-      console.log("Mensajes recibidos:", mensajes);
-
-      const ultimo = mensajes.reverse().find(msg =>
-        msg.toLowerCase().includes("reporte")
-      );
-
-      if (!ultimo) {
-        console.warn("⚠️ No se encontró un mensaje con 'Reporte'");
+      if (mensajes.length === 0) {
+        console.warn("⚠️ No se encontraron datos meteorológicos recientes");
         return;
       }
 
-      console.log("Mensaje detectado:", ultimo);
+      const ultimo = mensajes[mensajes.length - 1];
+      console.log("📩 Mensaje detectado:", ultimo);
 
-      const temperatura = ultimo.match(/Temperatura:\s*([\d.]+)/)?.[1] || "--";
-      const humedad = ultimo.match(/Humedad:\s*(\d+)/)?.[1] || "--";
-      const presion = ultimo.match(/Presi[oó]n:\s*(\d+)/)?.[1] || "--";
-      const uv = ultimo.match(/UV:\s*(\d+)/)?.[1] || "--";
-      const lluvia = ultimo.match(/Prob\. lluvia:\s*(\d+)/)?.[1] || "--";
-      const estado = ultimo.match(/[\u2600-\u26FF]\s*(.+)/)?.[1] || "--";
-
-      console.log({ temperatura, humedad, presion, uv, lluvia, estado });
-
-      document.getElementById("temp").textContent = temperatura + " °C";
-      document.getElementById("hum").textContent = humedad + " %";
-      document.getElementById("pres").textContent = presion + " hPa";
-      document.getElementById("uv").textContent = uv;
-      document.getElementById("lluvia").textContent = lluvia + " %";
-      document.getElementById("estado").textContent = estado;
-
-      actualizarGrafica(temperatura, humedad, presion);
+      const valores = extraerDatos(ultimo);
+      actualizarDashboard(valores);
+      actualizarGrafica(valores.temperatura);
     } catch (err) {
       console.error("❌ Error obteniendo datos:", err);
     }
   }
 
-  // --- Gráfica de Chart.js ---
-  let grafica;
+  // 🧩 Extrae valores del texto del reporte
+  function extraerDatos(texto) {
+    const temp = texto.match(/Temperatura:\s([\d.]+)/)?.[1];
+    const hum = texto.match(/Humedad:\s(\d+)/)?.[1];
+    const pres = texto.match(/Presión:\s(\d+)/)?.[1];
+    const uv = texto.match(/UV:\s(\d+)/)?.[1];
+    const lluvia = texto.match(/Prob\. lluvia:\s(\d+)/)?.[1];
+    const estado = texto.match(/(?:☀️|🌧|⛅|🌩️|🌦️)\s(.+)/)?.[1];
 
-  function actualizarGrafica(temp, hum, pres) {
-    const canvas = document.getElementById("chart");
-    if (!canvas) {
-      console.error("❌ No se encontró el elemento <canvas id='chart'>");
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    const datos = [parseFloat(temp), parseFloat(hum), parseFloat(pres)];
-
-    if (grafica) {
-      grafica.data.datasets[0].data = datos;
-      grafica.update();
-    } else {
-      grafica = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Temperatura (°C)", "Humedad (%)", "Presión (hPa)"],
-          datasets: [{
-            label: "Lectura actual",
-            data: datos,
-            backgroundColor: ["#ff6b6b", "#4dabf7", "#74c0fc"]
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
+    return { temperatura: temp, humedad: hum, presion: pres, uv, lluvia, estado };
   }
 
-  setInterval(obtenerDatos, 10000);
-  obtenerDatos();
+  // 🖥️ Actualiza las lecturas en pantalla
+  function actualizarDashboard({ temperatura, humedad, presion, uv, lluvia, estado }) {
+    document.getElementById("temp").textContent = temperatura || "--";
+    document.getElementById("hum").textContent = humedad || "--";
+    document.getElementById("pres").textContent = presion || "--";
+    document.getElementById("uv").textContent = uv || "--";
+    document.getElementById("lluvia").textContent = lluvia || "--";
+    document.getElementById("estado").textContent = estado || "--";
+  }
+
+  // 📈 Agrega el nuevo punto al gráfico
+  function actualizarGrafica(temp) {
+    const valor = parseFloat(temp);
+    if (isNaN(valor)) return;
+
+    const hora = new Date().toLocaleTimeString();
+    grafica.data.labels.push(hora);
+    grafica.data.datasets[0].data.push(valor);
+
+    if (grafica.data.labels.length > 10) {
+      grafica.data.labels.shift();
+      grafica.data.datasets[0].data.shift();
+    }
+
+    grafica.update();
+  }
+
+  // 🔁 Actualiza automáticamente cada 5 segundos
+  setInterval(obtenerDatos, 5000);
+  obtenerDatos(); // Primera carga
 });
