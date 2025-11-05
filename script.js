@@ -1,28 +1,40 @@
 const BOT_TOKEN = "8417526642:AAFL-KaDSyhPVGWo7lKIUm4YGUvUHlR1fko";
 const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`;
 
-const tempEl = document.getElementById("temp");
-const humEl = document.getElementById("hum");
-const presEl = document.getElementById("pres");
-const uvEl = document.getElementById("uv");
-const lluviaEl = document.getElementById("lluvia");
-const estadoEl = document.getElementById("estado");
+const ctx = document.getElementById("graficaClima").getContext("2d");
 
-const ctx = document.getElementById("chart").getContext("2d");
-const chart = new Chart(ctx, {
-  type: "line",
+let grafica = new Chart(ctx, {
+  type: "bar",
   data: {
-    labels: [],
+    labels: ["Temperatura", "Humedad", "Presión", "UV", "Lluvia"],
     datasets: [
-      { label: "Temperatura (°C)", data: [], borderColor: "red", fill: false },
-      { label: "Humedad (%)", data: [], borderColor: "blue", fill: false },
-      { label: "Presión (hPa)", data: [], borderColor: "green", fill: false },
-    ],
+      {
+        label: "Datos Meteorológicos",
+        data: [0, 0, 0, 0, 0],
+        backgroundColor: [
+          "rgba(255, 99, 132, 0.5)",
+          "rgba(54, 162, 235, 0.5)",
+          "rgba(255, 206, 86, 0.5)",
+          "rgba(75, 192, 192, 0.5)",
+          "rgba(153, 102, 255, 0.5)"
+        ],
+        borderColor: [
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+          "rgba(75, 192, 192, 1)",
+          "rgba(153, 102, 255, 1)"
+        ],
+        borderWidth: 1
+      }
+    ]
   },
   options: {
     responsive: true,
-    scales: { y: { beginAtZero: false } },
-  },
+    scales: {
+      y: { beginAtZero: true }
+    }
+  }
 });
 
 async function obtenerDatos() {
@@ -30,64 +42,45 @@ async function obtenerDatos() {
     const res = await fetch(API_URL);
     const data = await res.json();
 
-    if (!data.ok) throw new Error("Error en la API de Telegram");
-
-    const mensajes = data.result.reverse();
-    let mensajeDatos = null;
-
-    for (let msg of mensajes) {
-      const texto = msg.channel_post?.text || msg.message?.text;
-      if (!texto) continue;
-
-      // Normaliza texto eliminando acentos y minúsculas
-      const textoNormalizado = texto
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-
-      if (textoNormalizado.includes("reporte meteorologico itel")) {
-        mensajeDatos = texto;
-        break;
-      }
-    }
-
-    if (!mensajeDatos) {
-      console.warn("⚠️ No se encontraron datos meteorológicos recientes");
+    if (!data.ok || !data.result.length) {
+      console.warn("No se encontraron datos meteorológicos recientes");
       return;
     }
 
-    const temp = parseFloat(mensajeDatos.match(/Temperatura:\s*([\d.]+)/)?.[1]) || 0;
-    const hum = parseFloat(mensajeDatos.match(/Humedad:\s*([\d.]+)/)?.[1]) || 0;
-    const pres = parseFloat(mensajeDatos.match(/Presi[óo]n:\s*([\d.]+)/)?.[1]) || 0;
-    const uv = parseFloat(mensajeDatos.match(/UV:\s*([\d.]+)/)?.[1]) || 0;
-    const probLluvia = parseFloat(mensajeDatos.match(/Prob.*lluvia:\s*([\d.]+)/)?.[1]) || 0;
-    const estadoLluvia = mensajeDatos.match(/🌧\s*(.*)/)?.[1] || "N/A";
+    // Buscar el último mensaje con texto
+    const mensajesTexto = data.result.filter(
+      r => r.channel_post && r.channel_post.text
+    );
 
-    tempEl.textContent = `${temp} °C`;
-    humEl.textContent = `${hum} %`;
-    presEl.textContent = `${pres} hPa`;
-    uvEl.textContent = uv;
-    lluviaEl.textContent = `${probLluvia} %`;
-    estadoEl.textContent = estadoLluvia;
-
-    const ahora = new Date().toLocaleTimeString();
-    chart.data.labels.push(ahora);
-    chart.data.datasets[0].data.push(temp);
-    chart.data.datasets[1].data.push(hum);
-    chart.data.datasets[2].data.push(pres);
-
-    if (chart.data.labels.length > 10) {
-      chart.data.labels.shift();
-      chart.data.datasets.forEach(d => d.data.shift());
+    if (!mensajesTexto.length) {
+      console.warn("No hay mensajes de texto en el canal");
+      return;
     }
 
-    chart.update();
-    console.log("✅ Datos actualizados:", { temp, hum, pres, uv, probLluvia, estadoLluvia });
+    const ultimo = mensajesTexto[mensajesTexto.length - 1].channel_post.text;
 
-  } catch (err) {
-    console.error("❌ Error al obtener datos:", err);
+    console.log("Mensaje recibido:", ultimo);
+
+    // Extraer valores numéricos
+    const temperatura = parseFloat(ultimo.match(/Temperatura:\s*([\d.]+)/)?.[1] || 0);
+    const humedad = parseFloat(ultimo.match(/Humedad:\s*([\d.]+)/)?.[1] || 0);
+    const presion = parseFloat(ultimo.match(/Presi[oó]n:\s*([\d.]+)/)?.[1] || 0);
+    const uv = parseFloat(ultimo.match(/UV:\s*(\d+)/)?.[1] || 0);
+    const lluvia = parseFloat(ultimo.match(/Prob\.\s*lluvia:\s*([\d.]+)/)?.[1] || 0);
+
+    // Actualizar datos en la gráfica
+    grafica.data.datasets[0].data = [temperatura, humedad, presion, uv, lluvia];
+    grafica.update();
+
+    document.getElementById("ultimoMensaje").innerText =
+      "Última actualización: " + new Date().toLocaleTimeString();
+  } catch (error) {
+    console.error("Error al obtener datos:", error);
   }
 }
 
+// Actualizar cada 10 segundos
 setInterval(obtenerDatos, 10000);
+
+// Cargar al inicio
 obtenerDatos();
