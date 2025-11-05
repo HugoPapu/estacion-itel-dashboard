@@ -1,57 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estación Meteorológica ITEL</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estación Meteorológica ITEL 🌤️</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <header>
-        <h1>🌦️ Estación Meteorológica ITEL</h1>
-        <p>Datos en tiempo real enviados desde ESP32</p>
-    </header>
+  <header>
+    <h1>🌦️ Estación Meteorológica ITEL</h1>
+    <p>Lecturas en tiempo real desde el canal de Telegram</p>
+  </header>
 
-    <main>
-        <section class="panel">
-            <div class="card">
-                <h3>🌡️ Temperatura</h3>
-                <p id="temp">-- °C</p>
-            </div>
-            <div class="card">
-                <h3>💧 Humedad</h3>
-                <p id="hum">-- %</p>
-            </div>
-            <div class="card">
-                <h3>🧭 Presión</h3>
-                <p id="presion">-- hPa</p>
-            </div>
-            <div class="card">
-                <h3>🏔️ Altitud</h3>
-                <p id="altitud">-- m</p>
-            </div>
-            <div class="card">
-                <h3>🔥 Gas MQ-135</h3>
-                <p id="gas">-- ppm</p>
-            </div>
-            <div class="card">
-                <h3>🌱 Humedad del Suelo</h3>
-                <p id="suelo">-- %</p>
-            </div>
-        </section>
+  <main>
+    <div class="data-card">
+      <h2>🌡️ Temperatura</h2>
+      <p id="temp">-- °C</p>
+    </div>
+    <div class="data-card">
+      <h2>💧 Humedad</h2>
+      <p id="hum">-- %</p>
+    </div>
+    <div class="data-card">
+      <h2>🔽 Presión</h2>
+      <p id="pres">-- hPa</p>
+    </div>
+    <div class="data-card">
+      <h2>☀️ Índice UV</h2>
+      <p id="uv">--</p>
+    </div>
+    <div class="data-card">
+      <h2>🌧️ Estado de lluvia</h2>
+      <p id="lluvia">--</p>
+    </div>
+    <div class="data-card">
+      <h2>☔ Prob. de lluvia</h2>
+      <p id="prob">-- %</p>
+    </div>
+  </main>
 
-        <section class="graficas">
-            <h2>📊 Gráficas en tiempo real</h2>
-            <canvas id="graficaTemp"></canvas>
-            <canvas id="graficaHum"></canvas>
-        </section>
-    </main>
+  <footer>
+    <p>Datos obtenidos automáticamente del canal @MeteorEstacionITEL</p>
+  </footer>
 
-    <footer>
-        <p>© 2025 Proyecto IoT ITEL – Datos enviados por ESP32 y visualizados mediante Telegram + Render</p>
-    </footer>
-
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

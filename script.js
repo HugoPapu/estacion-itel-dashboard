@@ -1,81 +1,70 @@
-// Variables de ejemplo (simulación)
-let temperatura = 25.3;
-let humedad = 60.4;
-let presion = 1013.2;
-let altitud = 225;
-let gas = 180;
-let humedadSuelo = 45;
+// 🧠 Reemplaza con tu token real (¡NO lo compartas públicamente!)
+const BOT_TOKEN = "8417526642:AAFL-KaDSyhPVGWo7lKIUm4YGUvUHlR1fko";
+const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates`;
 
-// Mostrar valores en pantalla
-function actualizarPanel() {
-    document.getElementById("temp").innerText = temperatura.toFixed(1) + " °C";
-    document.getElementById("hum").innerText = humedad.toFixed(1) + " %";
-    document.getElementById("presion").innerText = presion.toFixed(1) + " hPa";
-    document.getElementById("altitud").innerText = altitud.toFixed(0) + " m";
-    document.getElementById("gas").innerText = gas.toFixed(0) + " ppm";
-    document.getElementById("suelo").innerText = humedadSuelo.toFixed(0) + " %";
-}
+async function obtenerDatos() {
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-// Simular cambios de datos cada 5 segundos
-setInterval(() => {
-    temperatura += (Math.random() - 0.5);
-    humedad += (Math.random() - 0.5) * 2;
-    gas += (Math.random() - 0.5) * 5;
-    humedadSuelo += (Math.random() - 0.5) * 3;
-    actualizarPanel();
-    agregarDatos();
-}, 5000);
+    if (!data.ok) throw new Error("Error en la API de Telegram");
 
-actualizarPanel();
+    // Buscar el último mensaje que contenga datos meteorológicos
+    const mensajes = data.result.reverse();
+    let mensajeDatos = null;
 
-// Gráficas con Chart.js
-const ctxTemp = document.getElementById("graficaTemp").getContext("2d");
-const ctxHum = document.getElementById("graficaHum").getContext("2d");
-
-const graficaTemp = new Chart(ctxTemp, {
-    type: "line",
-    data: {
-        labels: [],
-        datasets: [{
-            label: "Temperatura (°C)",
-            data: [],
-            borderColor: "#ff4500",
-            fill: false
-        }]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: false } } }
-});
-
-const graficaHum = new Chart(ctxHum, {
-    type: "line",
-    data: {
-        labels: [],
-        datasets: [{
-            label: "Humedad (%)",
-            data: [],
-            borderColor: "#0078d7",
-            fill: false
-        }]
-    },
-    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
-});
-
-// Agregar puntos nuevos a las gráficas
-function agregarDatos() {
-    const tiempo = new Date().toLocaleTimeString();
-    graficaTemp.data.labels.push(tiempo);
-    graficaHum.data.labels.push(tiempo);
-
-    graficaTemp.data.datasets[0].data.push(temperatura.toFixed(1));
-    graficaHum.data.datasets[0].data.push(humedad.toFixed(1));
-
-    if (graficaTemp.data.labels.length > 10) {
-        graficaTemp.data.labels.shift();
-        graficaTemp.data.datasets[0].data.shift();
-        graficaHum.data.labels.shift();
-        graficaHum.data.datasets[0].data.shift();
+    for (let msg of mensajes) {
+      if (msg.message && msg.message.text && msg.message.text.includes("Reporte Meteorológico")) {
+        mensajeDatos = msg.message.text;
+        break;
+      }
     }
 
-    graficaTemp.update();
-    graficaHum.update();
+    if (mensajeDatos) {
+      actualizarDashboard(mensajeDatos);
+    } else {
+      console.warn("No se encontraron datos meteorológicos en los mensajes recientes.");
+    }
+  } catch (error) {
+    console.error("Error al obtener datos:", error);
+  }
 }
+
+function actualizarDashboard(texto) {
+  // Ejemplo de texto que llega:
+  // 📈 <b>Reporte Meteorológico ITEL</b> 🌤
+  // 🌡 Temperatura: 25.3°C
+  // 💧 Humedad: 65.2%
+  // 🔽 Presión: 1013 hPa
+  // ☀ UV: 3.4
+  // 🌧 Seco
+  // ☔ Prob. lluvia: 20.5%
+
+  const temp = extraerValor(texto, /Temperatura:\s([\d.]+)/);
+  const hum = extraerValor(texto, /Humedad:\s([\d.]+)/);
+  const pres = extraerValor(texto, /Presión:\s([\d.]+)/);
+  const uv = extraerValor(texto, /UV:\s([\d.]+)/);
+  const lluvia = extraerTexto(texto, /🌧\s([^\n]+)/);
+  const prob = extraerValor(texto, /Prob\. lluvia:\s([\d.]+)/);
+
+  document.getElementById("temp").textContent = temp ? `${temp} °C` : "--";
+  document.getElementById("hum").textContent = hum ? `${hum} %` : "--";
+  document.getElementById("pres").textContent = pres ? `${pres} hPa` : "--";
+  document.getElementById("uv").textContent = uv ? `${uv}` : "--";
+  document.getElementById("lluvia").textContent = lluvia || "--";
+  document.getElementById("prob").textContent = prob ? `${prob} %` : "--";
+}
+
+function extraerValor(texto, regex) {
+  const match = texto.match(regex);
+  return match ? parseFloat(match[1]) : null;
+}
+
+function extraerTexto(texto, regex) {
+  const match = texto.match(regex);
+  return match ? match[1].trim() : null;
+}
+
+// Actualizar cada 10 segundos
+setInterval(obtenerDatos, 10000);
+obtenerDatos();
