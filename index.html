@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Estación Meteorológica ITEL 🌤️</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
@@ -13,30 +14,47 @@
   </header>
 
   <main>
-    <div class="data-card">
-      <h2>🌡️ Temperatura</h2>
-      <p id="temp">-- °C</p>
-    </div>
-    <div class="data-card">
-      <h2>💧 Humedad</h2>
-      <p id="hum">-- %</p>
-    </div>
-    <div class="data-card">
-      <h2>🔽 Presión</h2>
-      <p id="pres">-- hPa</p>
-    </div>
-    <div class="data-card">
-      <h2>☀️ Índice UV</h2>
-      <p id="uv">--</p>
-    </div>
-    <div class="data-card">
-      <h2>🌧️ Estado de lluvia</h2>
-      <p id="lluvia">--</p>
-    </div>
-    <div class="data-card">
-      <h2>☔ Prob. de lluvia</h2>
-      <p id="prob">-- %</p>
-    </div>
+    <section id="panel-datos">
+      <div class="data-card">
+        <h2>🌡️ Temperatura</h2>
+        <p id="temp">-- °C</p>
+      </div>
+      <div class="data-card">
+        <h2>💧 Humedad</h2>
+        <p id="hum">-- %</p>
+      </div>
+      <div class="data-card">
+        <h2>🔽 Presión</h2>
+        <p id="pres">-- hPa</p>
+      </div>
+      <div class="data-card">
+        <h2>☀️ Índice UV</h2>
+        <p id="uv">--</p>
+      </div>
+      <div class="data-card">
+        <h2>🌧️ Estado de lluvia</h2>
+        <p id="lluvia">--</p>
+      </div>
+      <div class="data-card">
+        <h2>☔ Prob. de lluvia</h2>
+        <p id="prob">-- %</p>
+      </div>
+    </section>
+
+    <section id="graficas">
+      <div class="grafica">
+        <h3>🌡️ Temperatura (°C)</h3>
+        <canvas id="chartTemp"></canvas>
+      </div>
+      <div class="grafica">
+        <h3>💧 Humedad (%)</h3>
+        <canvas id="chartHum"></canvas>
+      </div>
+      <div class="grafica">
+        <h3>🔽 Presión (hPa)</h3>
+        <canvas id="chartPres"></canvas>
+      </div>
+    </section>
   </main>
 
   <footer>
