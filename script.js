@@ -1,113 +1,81 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // 🔑 Inserta aquí tu token real del bot
-  const TOKEN = "<TU_TOKEN_AQUI>";
-  const url = `https://api.telegram.org/bot${TOKEN}/getUpdates`;
+// Variables de ejemplo (simulación)
+let temperatura = 25.3;
+let humedad = 60.4;
+let presion = 1013.2;
+let altitud = 225;
+let gas = 180;
+let humedadSuelo = 45;
 
-  // 📊 Inicializar gráfica
-  const canvas = document.getElementById("chart");
-  const ctx = canvas.getContext("2d");
+// Mostrar valores en pantalla
+function actualizarPanel() {
+    document.getElementById("temp").innerText = temperatura.toFixed(1) + " °C";
+    document.getElementById("hum").innerText = humedad.toFixed(1) + " %";
+    document.getElementById("presion").innerText = presion.toFixed(1) + " hPa";
+    document.getElementById("altitud").innerText = altitud.toFixed(0) + " m";
+    document.getElementById("gas").innerText = gas.toFixed(0) + " ppm";
+    document.getElementById("suelo").innerText = humedadSuelo.toFixed(0) + " %";
+}
 
-  const grafica = new Chart(ctx, {
+// Simular cambios de datos cada 5 segundos
+setInterval(() => {
+    temperatura += (Math.random() - 0.5);
+    humedad += (Math.random() - 0.5) * 2;
+    gas += (Math.random() - 0.5) * 5;
+    humedadSuelo += (Math.random() - 0.5) * 3;
+    actualizarPanel();
+    agregarDatos();
+}, 5000);
+
+actualizarPanel();
+
+// Gráficas con Chart.js
+const ctxTemp = document.getElementById("graficaTemp").getContext("2d");
+const ctxHum = document.getElementById("graficaHum").getContext("2d");
+
+const graficaTemp = new Chart(ctxTemp, {
     type: "line",
     data: {
-      labels: [],
-      datasets: [
-        {
-          label: "Temperatura (°C)",
-          data: [],
-          borderColor: "orange",
-          backgroundColor: "rgba(255,165,0,0.3)",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3
-        }
-      ]
+        labels: [],
+        datasets: [{
+            label: "Temperatura (°C)",
+            data: [],
+            borderColor: "#ff4500",
+            fill: false
+        }]
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { labels: { color: "white" } }
-      },
-      scales: {
-        x: {
-          ticks: { color: "white" },
-          grid: { color: "rgba(255,255,255,0.1)" }
-        },
-        y: {
-          ticks: { color: "white" },
-          grid: { color: "rgba(255,255,255,0.1)" },
-          beginAtZero: true
-        }
-      }
-    }
-  });
-
-  // 🧠 Función para obtener los datos del canal
-  async function obtenerDatos() {
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-
-      const mensajes = data.result
-        .map(u => u.channel_post?.text)
-        .filter(t => t && t.includes("Reporte Meteorológico ITEL"));
-
-      if (mensajes.length === 0) {
-        console.warn("⚠️ No se encontraron datos meteorológicos recientes");
-        return;
-      }
-
-      const ultimo = mensajes[mensajes.length - 1];
-      console.log("📩 Mensaje detectado:", ultimo);
-
-      const valores = extraerDatos(ultimo);
-      actualizarDashboard(valores);
-      actualizarGrafica(valores.temperatura);
-    } catch (err) {
-      console.error("❌ Error obteniendo datos:", err);
-    }
-  }
-
-  // 🧩 Extrae valores del texto del reporte
-  function extraerDatos(texto) {
-    const temp = texto.match(/Temperatura:\s([\d.]+)/)?.[1];
-    const hum = texto.match(/Humedad:\s(\d+)/)?.[1];
-    const pres = texto.match(/Presión:\s(\d+)/)?.[1];
-    const uv = texto.match(/UV:\s(\d+)/)?.[1];
-    const lluvia = texto.match(/Prob\. lluvia:\s(\d+)/)?.[1];
-    const estado = texto.match(/(?:☀️|🌧|⛅|🌩️|🌦️)\s(.+)/)?.[1];
-
-    return { temperatura: temp, humedad: hum, presion: pres, uv, lluvia, estado };
-  }
-
-  // 🖥️ Actualiza las lecturas en pantalla
-  function actualizarDashboard({ temperatura, humedad, presion, uv, lluvia, estado }) {
-    document.getElementById("temp").textContent = temperatura || "--";
-    document.getElementById("hum").textContent = humedad || "--";
-    document.getElementById("pres").textContent = presion || "--";
-    document.getElementById("uv").textContent = uv || "--";
-    document.getElementById("lluvia").textContent = lluvia || "--";
-    document.getElementById("estado").textContent = estado || "--";
-  }
-
-  // 📈 Agrega el nuevo punto al gráfico
-  function actualizarGrafica(temp) {
-    const valor = parseFloat(temp);
-    if (isNaN(valor)) return;
-
-    const hora = new Date().toLocaleTimeString();
-    grafica.data.labels.push(hora);
-    grafica.data.datasets[0].data.push(valor);
-
-    if (grafica.data.labels.length > 10) {
-      grafica.data.labels.shift();
-      grafica.data.datasets[0].data.shift();
-    }
-
-    grafica.update();
-  }
-
-  // 🔁 Actualiza automáticamente cada 5 segundos
-  setInterval(obtenerDatos, 5000);
-  obtenerDatos(); // Primera carga
+    options: { responsive: true, scales: { y: { beginAtZero: false } } }
 });
+
+const graficaHum = new Chart(ctxHum, {
+    type: "line",
+    data: {
+        labels: [],
+        datasets: [{
+            label: "Humedad (%)",
+            data: [],
+            borderColor: "#0078d7",
+            fill: false
+        }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+});
+
+// Agregar puntos nuevos a las gráficas
+function agregarDatos() {
+    const tiempo = new Date().toLocaleTimeString();
+    graficaTemp.data.labels.push(tiempo);
+    graficaHum.data.labels.push(tiempo);
+
+    graficaTemp.data.datasets[0].data.push(temperatura.toFixed(1));
+    graficaHum.data.datasets[0].data.push(humedad.toFixed(1));
+
+    if (graficaTemp.data.labels.length > 10) {
+        graficaTemp.data.labels.shift();
+        graficaTemp.data.datasets[0].data.shift();
+        graficaHum.data.labels.shift();
+        graficaHum.data.datasets[0].data.shift();
+    }
+
+    graficaTemp.update();
+    graficaHum.update();
+}
