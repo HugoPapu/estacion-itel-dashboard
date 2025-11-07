@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estación Meteorológica ITEL</title>
+    <title>Simulación Meteorológica ITEL</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>🌦️ Estación Meteorológica ITEL</h1>
-        <p>Datos en tiempo real enviados desde ESP32</p>
+        <h1>🌦️ Simulación Meteorológica ITEL</h1>
+        <p>Datos simulados en tiempo real</p>
     </header>
 
     <main>
@@ -28,16 +28,12 @@
                 <p id="presion">-- hPa</p>
             </div>
             <div class="card">
-                <h3>🏔️ Altitud</h3>
-                <p id="altitud">-- m</p>
+                <h3>🌱 Estado del Suelo</h3>
+                <p id="estadoSuelo">--</p>
             </div>
             <div class="card">
-                <h3>🔥 Gas MQ-135</h3>
-                <p id="gas">-- ppm</p>
-            </div>
-            <div class="card">
-                <h3>🌱 Humedad del Suelo</h3>
-                <p id="suelo">-- %</p>
+                <h3>🌧️ Probabilidad de Lluvia</h3>
+                <p id="lluvia">-- %</p>
             </div>
         </section>
 
@@ -49,7 +45,7 @@
     </main>
 
     <footer>
-        <p>© 2025 Proyecto IoT ITEL – Datos enviados por ESP32 y visualizados mediante Telegram + Render</p>
+        <p>© 2025 Proyecto IoT ITEL – Simulación local</p>
     </footer>
 
     <script src="script.js"></script>

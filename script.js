@@ -1,34 +1,42 @@
-// Variables de ejemplo (simulación)
-let temperatura = 25.3;
-let humedad = 60.4;
-let presion = 1013.2;
-let altitud = 225;
-let gas = 180;
-let humedadSuelo = 45;
+// Variables simuladas
+let temperatura = 25.0;
+let humedad = 55.0;
+let presion = 1013.0;
+let probLluvia = 30;
+let estadoSuelo = "Seco";
 
-// Mostrar valores en pantalla
+// Actualizar panel
 function actualizarPanel() {
     document.getElementById("temp").innerText = temperatura.toFixed(1) + " °C";
     document.getElementById("hum").innerText = humedad.toFixed(1) + " %";
     document.getElementById("presion").innerText = presion.toFixed(1) + " hPa";
-    document.getElementById("altitud").innerText = altitud.toFixed(0) + " m";
-    document.getElementById("gas").innerText = gas.toFixed(0) + " ppm";
-    document.getElementById("suelo").innerText = humedadSuelo.toFixed(0) + " %";
+    document.getElementById("estadoSuelo").innerText = estadoSuelo;
+    document.getElementById("lluvia").innerText = probLluvia.toFixed(0) + " %";
 }
 
-// Simular cambios de datos cada 5 segundos
+// Generar estado del suelo
+function determinarEstadoSuelo(humedad) {
+    if (humedad < 40) return "Seco";
+    if (humedad < 70) return "Húmedo";
+    return "Mojado";
+}
+
+// Simular cambios de datos
 setInterval(() => {
-    temperatura += (Math.random() - 0.5);
-    humedad += (Math.random() - 0.5) * 2;
-    gas += (Math.random() - 0.5) * 5;
-    humedadSuelo += (Math.random() - 0.5) * 3;
+    temperatura += (Math.random() - 0.5) * 2;
+    humedad += (Math.random() - 0.5) * 4;
+    presion += (Math.random() - 0.5) * 1.5;
+    probLluvia = Math.max(0, Math.min(100, humedad - 20 + Math.random() * 10));
+
+    estadoSuelo = determinarEstadoSuelo(humedad);
+
     actualizarPanel();
     agregarDatos();
-}, 5000);
+}, 4000);
 
 actualizarPanel();
 
-// Gráficas con Chart.js
+// Gráficas
 const ctxTemp = document.getElementById("graficaTemp").getContext("2d");
 const ctxHum = document.getElementById("graficaHum").getContext("2d");
 
@@ -60,9 +68,10 @@ const graficaHum = new Chart(ctxHum, {
     options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
 });
 
-// Agregar puntos nuevos a las gráficas
+// Añadir nuevos puntos
 function agregarDatos() {
     const tiempo = new Date().toLocaleTimeString();
+
     graficaTemp.data.labels.push(tiempo);
     graficaHum.data.labels.push(tiempo);
 
